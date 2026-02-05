@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SVG Drawing Tool</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2f4f8;
+    }
+
+    .card {
+      width: 80vw;
+      max-width: 900px;
+      padding: 30px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+    }
+
+    .undo-btn {
+      background: #2f7cf6;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .undo-btn:disabled {
+      background: #b0c9ff;
+      cursor: not-allowed;
+    }
+
+    .canvas-wrapper {
+      border: 2px dashed #d6dbe1;
+      border-radius: 16px;
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: 45vh;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .counter {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="toolbar">
+    <button class="undo-btn" id="undoBtn" disabled>Undo</button>
+  </div>
+
+  <div class="canvas-wrapper">
+    <svg id="svgCanvas"></svg>
+  </div>
+
+  <div class="counter">
+    Circles drawn: <span id="count">0</span>
+  </div>
+</div>
+
+<script>
+  const svg = document.getElementById("svgCanvas");
+  const undoBtn = document.getElementById("undoBtn");
+  const countEl = document.getElementById("count");
+
+  let circles = [];
+
+  svg.addEventListener("click", (e) => {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+
+    const svgPoint = pt.matrixTransform(
+      svg.getScreenCTM().inverse()
+    );
+
+    const circle = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
+
+    circle.setAttribute("cx", svgPoint.x);
+    circle.setAttribute("cy", svgPoint.y);
+    circle.setAttribute("r", 8);
+    circle.setAttribute("fill", "#2f7cf6");
+
+    svg.appendChild(circle);
+    circles.push(circle);
+
+    updateUI();
+  });
+
+  undoBtn.addEventListener("click", () => {
+    if (circles.length > 0) {
+      const last = circles.pop();
+      svg.removeChild(last);
+      updateUI();
+    }
+  });
+
+  function updateUI() {
+    countEl.textContent = circles.length;
+    undoBtn.disabled = circles.length === 0;
+  }
+</script>
+
+</body>
+</html>
